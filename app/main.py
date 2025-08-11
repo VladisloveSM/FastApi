@@ -1,14 +1,27 @@
 # обновляем код main.py
 from fastapi import FastAPI
-from pydantic import BaseModel
+from app import config
+from app.logger import logger
+from app.config import load_config
+import logging 
+
 
 app = FastAPI()
 
-class User(BaseModel):
-    username: str
-    message: str
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-@app.post("/")
-def root(user: User):
-    print(f"Received user: {user.username} with message: {user.message}")
-    return user
+config = load_config()
+if config.debug:
+    app.debug = True
+else:
+    app.debug = False
+
+@app.get("/")
+def read_root():
+    logger.info("Handling request to root endpoint")
+    return {"message": "Hello, World!"}
+
+@app.get("/db")
+def get_db_info():
+    logger.info(f"Connecting to database with URL: {config.db.database_url}")
