@@ -1,13 +1,14 @@
 # обновляем код main.py
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello, World!"}
+class User(BaseModel):
+    username: str
+    message: str
 
-# новый маршрут
-@app.get("/custom")
-def read_custom_message():
-    return {"message": "This is a custom message!"}
+@app.post("/")
+def root(user: User):
+    print(f"Received user: {user.username} with message: {user.message}")
+    return user
