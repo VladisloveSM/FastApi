@@ -1,9 +1,10 @@
-# обновляем код main.py
+import logging
+
 from fastapi import FastAPI
+
 from app import config
-from app.logger import logger
 from app.config import load_config
-import logging 
+from app.logger import logger
 
 
 app = FastAPI()
@@ -17,10 +18,12 @@ if config.debug:
 else:
     app.debug = False
 
+
 @app.get("/")
 def read_root():
     logger.info("Handling request to root endpoint")
     return {"message": "Hello, World!"}
+
 
 @app.get("/db")
 def get_db_info():
