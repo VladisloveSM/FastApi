@@ -20,7 +20,7 @@ def load_config(path: str = None) -> Config:
     env.read_env(path)
 
     return Config(
-        db=DatabaseConfig(database_url=env("DATABASE_URL")),
+        database=DatabaseConfig(database_url=env("DATABASE_URL")),
         seceret_key=env("SECRET_KEY"),
         debug=env.bool("DEBUG", default=False),
     )
