@@ -1,39 +1,17 @@
-from fastapi import FastAPI
+# main.py
+from fastapi import FastAPI 
 
-from app import config
-from app.models import User
-from app.config import load_config
-from app.logger import logger
+app = FastAPI() 
 
-import logging
+fake_db = [{"username": "vasya", "user_info": "любит колбасу"}, {"username": "katya", "user_info": "любит петь"}] 
 
-app = FastAPI()
+# Обрабатываем GET-запрос, чтобы вернуть список пользователей 
+@app.get('/users') 
+async def get_all_users(): 
+    return fake_db 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-config = load_config()
-if config.debug:
-    app.debug = True
-else:
-    app.debug = False
-
-def is_adult(user: User):
-    answer = user.dict()
-    answer["is_adult"] = user.age >= 18
-    return answer
-
-@app.get("/")
-def read_root():
-    logger.info("Handling request to root endpoint")
-    return {"message": "Hello, World!"}
-
-
-@app.get("/db")
-def get_db_info():
-    logger.info(f"Connecting to database with URL: {config.database.database_url}")
-
-
-@app.post("/user")
-async def read_root(user: User):
-    return is_adult(user)
+# Обрабатываем POST-запрос, чтобы добавить нового пользователя 
+@app.post('/add_user') 
+async def add_user(username: str, user_info: str): 
+    fake_db.append({"username": username, "user_info": user_info}) 
+    return {"message": "Юзер успешно добавлен в базу данных"}
