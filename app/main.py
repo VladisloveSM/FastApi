@@ -1,17 +1,23 @@
-# main.py
 from fastapi import FastAPI 
 
 app = FastAPI() 
 
-fake_db = [{"username": "vasya", "user_info": "любит колбасу"}, {"username": "katya", "user_info": "любит петь"}] 
+fake_users = {
+    1: {"username": "john_doe", "email": "john@example.com"},
+    2: {"username": "jane_smith", "email": "jane@example.com"},
+    3: {"username": "alice_jones", "email": "alice@example.com"},
+    4: {"username": "bob_white", "email": "bob@example.com"},
+}
 
 # Обрабатываем GET-запрос, чтобы вернуть список пользователей 
-@app.get('/users') 
-async def get_all_users(): 
-    return fake_db 
+@app.get("/users/")
+def read_users(username: str = None, email: str = None, limit: int = 10):
+    filtered_users = fake_users
 
-# Обрабатываем POST-запрос, чтобы добавить нового пользователя 
-@app.post('/add_user') 
-async def add_user(username: str, user_info: str): 
-    fake_db.append({"username": username, "user_info": user_info}) 
-    return {"message": "Юзер успешно добавлен в базу данных"}
+    if username:
+        filtered_users = {key: user for key, user in filtered_users.items() if username.lower() in user["username"].lower()}
+
+    if email:
+        filtered_users = {key: user for key, user in filtered_users.items() if email.lower() in user["email"].lower()}
+
+    return dict(list(filtered_users.items())[:limit])
