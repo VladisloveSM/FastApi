@@ -18,10 +18,17 @@ fake_db = [
 } 
 ]
 
-# Обрабатываем GET-запрос, чтобы вернуть список пользователей 
+@app.get("/users/{user_name}")
+async def read_user(user_name: str):
+    for user in fake_db:
+        if user["username"] == user_name:
+            return user
+    return {"error": "User not found"}
+
+
 @app.get("/users")
-async def read_users(username: str = None, email: str = None, limit: int = 10):
-    return fake_db
+async def read_users(limit: int = 10):
+    return fake_db[:limit]
 
 @app.post("/add_user", response_model=User)
 async def create_user(user: User):
