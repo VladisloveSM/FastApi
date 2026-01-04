@@ -1,5 +1,6 @@
 from fastapi import FastAPI 
 from pydantic import BaseModel
+from models import Feedback
 
 app = FastAPI() 
 
@@ -17,6 +18,8 @@ fake_db = [
     "user_info": "love sci-fi"
 } 
 ]
+
+fake_db_feedback = []
 
 @app.get("/users/{user_name}")
 async def read_user(user_name: str):
@@ -37,3 +40,15 @@ async def create_user(user: User):
         "user_info": user.user_info
     })
     return user
+
+@app.post("/add_feedback")
+async def create_feedback(feedback: Feedback):
+    fake_db_feedback.append({
+        "name": feedback.name,
+        "comments": feedback.message
+    })
+    return {"message": f"Feedback received. Thank you, {feedback.name}!"}
+
+@app.get("/comments")
+async def read_feedbacks():
+    return fake_db_feedback
