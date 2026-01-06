@@ -6,5 +6,5 @@ class User(BaseModel):
     name: str
 
 class Feedback(BaseModel):
-    name: str = Field(max_length=50)
-    message: str = Field(max_length=50)
+    name: str = Field(min_length=2, max_length=50)
+    message: str = Field(min_length=10, max_length=500)
