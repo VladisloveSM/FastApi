@@ -20,7 +20,7 @@ fake_db = [
 } 
 ]
 
-fake_db_feedback = []
+feedbacks = []
 
 @app.get("/users/{user_name}")
 async def read_user(user_name: str):
@@ -42,14 +42,11 @@ async def create_user(user: User):
     })
     return user
 
-@app.post("/add_feedback")
+@app.post("/feedback")
 async def create_feedback(feedback: Feedback):
-    fake_db_feedback.append({
-        "name": feedback.name,
-        "comments": feedback.message
-    })
-    return {"message": f"Feedback received. Thank you, {feedback.name}!"}
+    feedbacks.append(feedback)
+    return {"message": f"Спасибо, {feedback.name}! Ваш отзыв сохранён."}
 
 @app.get("/comments")
 async def read_feedbacks():
-    return fake_db_feedback
+    return feedbacks
