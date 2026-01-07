@@ -1,6 +1,7 @@
 from fastapi import FastAPI 
 from pydantic import BaseModel
 from models import Feedback
+from validators import validate_feedback
 
 app = FastAPI() 
 
@@ -20,15 +21,6 @@ fake_db = [
 ]
 
 fake_db_feedback = []
-
-ban_words = ["редиск", "бяк", "козявк"]
-
-async def validate_feedback(message: str) -> bool:
-    words = message.lower().split()
-    for ban_word in ban_words:
-        if any(ban_word.lower() in s for s in words):
-            return False
-    return True
 
 @app.get("/users/{user_name}")
 async def read_user(user_name: str):
