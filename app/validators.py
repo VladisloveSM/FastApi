@@ -11,8 +11,7 @@ def validate_feedback(message: str) -> bool:
             return False
     return True
 
-def validate_phone(phone: str) -> bool:
-    if not phone.isdigit():
-        return False
-    else:
+def validate_phone(phone: str | None) -> bool:
+    if phone is None:
         return True
+    return phone.isdigit()

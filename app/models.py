@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, EmailStr
+from typing import Optional
 import validators
 
 class User(BaseModel):
@@ -8,7 +9,7 @@ class User(BaseModel):
 
 class Contact(BaseModel):
     email: EmailStr
-    phone: str = Field(min_length=7, max_length=15)
+    phone: Optional[str] = Field(default=None, min_length=7, max_length=15)
 
     @field_validator('phone')
     def check_phone(cls, value) -> str:

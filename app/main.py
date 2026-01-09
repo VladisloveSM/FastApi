@@ -1,13 +1,9 @@
 from fastapi import FastAPI 
 from pydantic import BaseModel
-from models import Feedback
+from models import Feedback, User, Contact
 from validators import validate_feedback
 
 app = FastAPI() 
-
-class User(BaseModel):
-    username: str
-    user_info: str
 
 fake_db = [ 
 {
