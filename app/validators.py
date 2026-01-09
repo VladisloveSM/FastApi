@@ -10,3 +10,9 @@ def validate_feedback(message: str) -> bool:
         if re.search(pattern, text, flags=re.IGNORECASE | re.UNICODE):
             return False
     return True
+
+def validate_phone(phone: str) -> bool:
+    if not phone.isdigit():
+        return False
+    else:
+        return True
