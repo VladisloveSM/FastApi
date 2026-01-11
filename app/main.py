@@ -1,7 +1,6 @@
 from fastapi import FastAPI 
 from pydantic import BaseModel
 from models import Feedback, User, Contact
-from validators import validate_feedback
 
 app = FastAPI() 
 
@@ -39,9 +38,14 @@ async def create_user(user: User):
     return user
 
 @app.post("/feedback")
-async def create_feedback(feedback: Feedback):
+async def create_feedback(feedback: Feedback, is_premium: bool = False):
     feedbacks.append(feedback)
-    return {"message": f"Спасибо, {feedback.name}! Ваш отзыв сохранён."}
+    if is_premium:
+        message = f"Спасибо, {feedback.name}! Ваш отзыв сохранён. Ваш отзыв будет рассмотрен в приоритетном порядке."
+    else:
+        message = f"Спасибо, {feedback.name}! Ваш отзыв сохранён."
+
+    return { "message": message }
 
 @app.get("/comments")
 async def read_feedbacks():
