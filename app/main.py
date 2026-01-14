@@ -1,6 +1,5 @@
 from fastapi import FastAPI 
-from pydantic import BaseModel
-from models import Feedback, User, Contact
+from app.models import Feedback, User
 
 app = FastAPI() 
 

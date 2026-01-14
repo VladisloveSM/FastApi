@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional
-import validators
+import app.validators as validators
 
 class User(BaseModel):
     age: int
