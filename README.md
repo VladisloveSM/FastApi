@@ -76,7 +76,7 @@ fastapi-learning/
 1. Клонируйте репозиторий:
 ```bash
 git clone <url-репозитория>
-cd fastapi-learning
+cd fastapi
 ```
 
 2. Создайте виртуальное окружение:
@@ -103,8 +103,6 @@ uvicorn app.main:app --reload
 ```
 
 Приложение будет доступно по адресу: http://localhost:8000
-
-Интерактивная документация API: http://localhost:8000/docs
 
 ## 📚 Модули обучения
 
@@ -208,10 +206,6 @@ docker-compose up --build
 3. Зафиксируйте изменения (`git commit -m 'Add amazing feature'`)
 4. Отправьте ветку (`git push origin feature/amazing-feature`)
 5. Создайте Pull Request
-
-## 👨‍💻 Автор
-
-Ваше имя - [email@example.com](mailto:email@example.com)
 
 ---
 
