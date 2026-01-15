@@ -5,12 +5,12 @@ app = FastAPI()
 
 fake_db = [ 
 {
-    "username": "vlad",
-    "user_info": "love cyberpunk"
+    "age": 12,
+    "name": "love cyberpunk"
 }, 
 {
-    "username": "anton",
-    "user_info": "love sci-fi"
+    "age": 34,
+    "name": "love sci-fi"
 } 
 ]
 
@@ -19,7 +19,7 @@ feedbacks = []
 @app.get("/users/{user_name}")
 async def read_user(user_name: str):
     for user in fake_db:
-        if user["username"] == user_name:
+        if user["name"] == user_name:
             return user
     return {"error": "User not found"}
 
@@ -31,8 +31,8 @@ async def read_users(limit: int = 10):
 @app.post("/add_user", response_model=User)
 async def create_user(user: User):
     fake_db.append({
-        "username": user.username,
-        "user_info": user.user_info
+        "name": user.name,
+        "age": user.age
     })
     return user
 
