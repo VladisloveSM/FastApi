@@ -4,14 +4,7 @@ from app.models import Feedback, User
 app = FastAPI() 
 
 fake_db = [ 
-{
-    "age": 12,
-    "name": "love cyberpunk"
-}, 
-{
-    "age": 34,
-    "name": "love sci-fi"
-} 
+
 ]
 
 feedbacks = []
