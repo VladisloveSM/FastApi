@@ -3,13 +3,6 @@ from typing import Optional
 import app.validators as validators
 
 
-class UserCreate(BaseModel):
-    name: str
-    email: EmailStr
-    age: int = Field(gt=0)
-    is_subscribed: Optional[bool] = None
-
-
 class Contact(BaseModel):
     email: EmailStr
     phone: Optional[str] = Field(default=None, min_length=7, max_length=15)
