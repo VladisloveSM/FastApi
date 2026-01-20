@@ -2,11 +2,12 @@ from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional
 import app.validators as validators
 
+
 class UserCreate(BaseModel):
     name: str
-    age: int
     email: EmailStr
-    is_subscribed: Optional[bool]
+    age: int = Field(gt=0)
+    is_subscribed: Optional[bool] = None
 
 
 class Contact(BaseModel):

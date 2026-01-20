@@ -1,33 +1,14 @@
 from fastapi import FastAPI 
-from app.models import Feedback, User
+from app.models import Feedback, UserCreate
 
 app = FastAPI() 
 
-fake_db = [ 
-
-]
-
 feedbacks = []
 
-@app.get("/users/{user_name}")
-async def read_user(user_name: str):
-    for user in fake_db:
-        if user["name"] == user_name:
-            return user
-    return {"error": "User not found"}
-
-
-@app.get("/users")
-async def read_users(limit: int = 10):
-    return fake_db[:limit]
-
-@app.post("/add_user", response_model=User)
-async def create_user(user: User):
-    fake_db.append({
-        "name": user.name,
-        "age": user.age
-    })
+@app.post("/create_user")
+async def create_user(user: UserCreate, response_model=UserCreate):
     return user
+    
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
