@@ -23,6 +23,10 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
     if session_token not in valid_sessions:
         raise HTTPException(status_code=401, detail=f"Невалидная сессия {session_token}")
     
+    if valid_sessions[session_token]["expiration"] < datetime.now():
+        del valid_sessions[session_token]
+        raise HTTPException(status_code=401, detail="Сессия истекла")
+    
     return session_token
 
 
