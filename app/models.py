@@ -2,6 +2,10 @@ from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional
 import app.validators as validators
 
+class LoginData(BaseModel):
+    username: str
+    password: str
+
 
 class Contact(BaseModel):
     email: EmailStr
