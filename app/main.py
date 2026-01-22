@@ -21,7 +21,7 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
         raise HTTPException(status_code=401, detail="Cookie не найдена")
     
     if session_token not in valid_sessions:
-        raise HTTPException(status_code=401, detail="Невалидная сессия")
+        raise HTTPException(status_code=401, detail=f"Невалидная сессия {session_token}")
     
     return session_token
 
@@ -38,8 +38,8 @@ async def login(data: LoginData, response: Response):
                 secure=False,  # True для HTTPS
                 samesite="lax"
             )
-            valid_sessions[id] =  { "username": data.username, "expiration": datetime.now() + timedelta(hours=1) }
-            return {"message": "Успешный вход!"}
+            valid_sessions[str(id)] =  { "username": data.username, "expiration": datetime.now() + timedelta(hours=1) }
+            return {"message": f"Успешный вход, и вот моя сессия: {id}"}
     return {"message": "Неверные учетные данные."}
 
 
