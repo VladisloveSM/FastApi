@@ -2,16 +2,20 @@ from fastapi import FastAPI, Cookie, HTTPException, Response, Depends
 from app.models import Feedback, LoginData
 from typing import Optional
 from datetime import datetime, timedelta
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 import uuid
 
 app = FastAPI() 
 
 feedbacks = []
 
+SECRET_KEY = 'supersecretkey'
+serializer = URLSafeTimedSerializer(SECRET_KEY)
+
 users = [
-    {"username": "admin", "password": "secret"},
-    {"username": "user", "password": "password123"},
-    {"username": "user123", "password": "password123"},
+    {"id": str(uuid.uuid4()), "username": "admin", "password": "secret"},
+    {"id": str(uuid.uuid4()), "username": "user", "password": "password123"},
+    {"id": str(uuid.uuid4()), "username": "user123", "password": "password123"},
 ]
 
 valid_sessions = {}
@@ -34,16 +38,16 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
 async def login(data: LoginData, response: Response):
     for user in users:
         if user["username"] == data.username and user["password"] == data.password:
-            id = uuid.uuid4()
+            signature = serializer.dumps(user['id'])
             response.set_cookie(
                 key="session_token",
-                value=id,
+                value=f"{user['id']}.{signature}",
                 httponly=True,
                 secure=False,  # True для HTTPS
                 samesite="lax"
             )
-            valid_sessions[str(id)] =  { "username": data.username, "expiration": datetime.now() + timedelta(hours=1) }
-            return {"message": f"Успешный вход, и вот моя сессия: {id}"}
+            valid_sessions[f"{user['id']}.{signature}"] =  { "username": data.username, "expiration": datetime.now() + timedelta(hours=1) }
+            return {"message": f"Успешный вход, и вот моя сессия: {user['id']}.{signature}"}
     return {"message": "Неверные учетные данные."}
 
 
