@@ -23,13 +23,11 @@ valid_sessions = {}
 def verify_session(session_token: Optional[str] = Cookie(None)):
     if session_token is None:
         raise HTTPException(status_code=401, detail="Cookie не найдена")
-    
-    if session_token not in valid_sessions:
-        raise HTTPException(status_code=401, detail=f"Невалидная сессия {session_token}")
-    
-    if valid_sessions[session_token]["expiration"] < datetime.now():
-        del valid_sessions[session_token]
-        raise HTTPException(status_code=401, detail="Сессия истекла")
+    user_id, signature = session_token.split(".", 1)
+    data = serializer.loads(signature, max_age=3600)
+
+    if user_id != data:
+        raise HTTPException(status_code=401, detail="Недействительная сессия")
     
     return session_token
 
@@ -43,18 +41,18 @@ async def login(data: LoginData, response: Response):
                 key="session_token",
                 value=f"{user['id']}.{signature}",
                 httponly=True,
+                max_age=3600,
                 secure=False,  # True для HTTPS
                 samesite="lax"
             )
-            valid_sessions[f"{user['id']}.{signature}"] =  { "username": data.username, "expiration": datetime.now() + timedelta(hours=1) }
             return {"message": f"Успешный вход, и вот моя сессия: {user['id']}.{signature}"}
     return {"message": "Неверные учетные данные."}
 
 
-@app.get("/user")
+@app.get("/profile")
 async def get_user(session_token: str = Depends(verify_session)):
-    user_info = valid_sessions.get(session_token)
-    return {"username": user_info["username"]}
+    user_id, signature = session_token.split(".", 1)
+    return {"message": f"Пользователь с ID: {user_id}, Сигнатура: {signature}"}
 
 
 @app.post("/feedback")
