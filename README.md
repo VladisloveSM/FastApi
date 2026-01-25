@@ -90,6 +90,11 @@ source venv/bin/activate  # На Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+Или создайте файл зависимостей:
+```bash
+pip freeze > .\requirements.txt
+```
+
 4. Настройте переменные окружения:
 ```bash
 cp .env.example .env

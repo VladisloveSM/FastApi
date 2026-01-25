@@ -29,30 +29,41 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
 
     return session_token
 
+
 def refresh_token(session_token: str):
     # Needs to be implemented properly in a real-world scenario
     return { "message": "Сессия обновлена" }
 
+
 @app.post("/login")
-async def login(data: LoginData, reques: Request, response: Response, session_token: Optional[str] = Cookie(None)):
-    for user in users:
-        if user["username"] == data.username and user["password"] == data.password:
-            if session_token:
-                session_token = verify_session(session_token)
-                session_token = refresh_token(session_token)
-                return {"message": f"Сессия обновлена. Ваш токен: {session_token}"}
-            else:
-                signature = signer.sign(user["id"]).decode()
-                response.set_cookie(
-                    key="session_token",
-                    value=f"{signature}",
-                    httponly=True,
-                    max_age=300,
-                    secure=False,  # True for HTTPS
-                    samesite="lax"
-                )
-                return {"message": f"Успешный вход, и вот моя сессия: {signature}"}
-    return {"message": "Неверные учетные данные."}
+async def login(data: LoginData, request: Request, response: Response, session_token: Optional[str] = Cookie(None)):
+    user = next(
+        (u for u in users if u["username"] == data.username and u["password"] == data.password),
+        None
+    )
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Неверные учетные данные")
+    
+    token = request.cookies.get("session_token")
+
+    if token:
+        token = refresh_token(token)
+        return {"message": "Сессия обновлена."}
+    
+    # Создаём токен
+    signature = signer.sign(user["id"]).decode()
+    
+    # Устанавливаем cookie (перезапишет если была)
+    response.set_cookie(
+        key="session_token",
+        value=signature,
+        httponly=True,
+        max_age=3600,
+        samesite="lax"
+    )
+    
+    return {"message": "Успешный вход"}
 
 
 @app.get("/profile")
