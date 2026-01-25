@@ -40,7 +40,7 @@ async def login(data: LoginData, reques: Request, response: Response, session_to
             if session_token:
                 session_token = verify_session(session_token)
                 session_token = refresh_token(session_token)
-                return {"message": "Сессия обновлена."}
+                return {"message": f"Сессия обновлена. Ваш токен: {session_token}"}
             else:
                 signature = signer.sign(user["id"]).decode()
                 response.set_cookie(
@@ -57,8 +57,7 @@ async def login(data: LoginData, reques: Request, response: Response, session_to
 
 @app.get("/profile")
 async def get_user(session_token: str = Depends(verify_session)):
-    user_id, signature = session_token.split(".", 1)
-    return {"message": f"Пользователь с ID: {user_id}, Сигнатура: {signature}"}
+    return {"message": f"Пользователь ваша сессия: {session_token}"}
 
 
 @app.post("/feedback")
