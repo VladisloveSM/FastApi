@@ -9,6 +9,7 @@ app = FastAPI()
 
 feedbacks = []
 
+COOKIE_LIFETIME = 300  # 5 minutes in seconds
 SECRET_KEY = 'supersecretkey'
 signer = TimestampSigner(SECRET_KEY)
 
@@ -23,7 +24,7 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
     if session_token is None:
         raise HTTPException(status_code=401, detail="Cookie не найдена")
     try:
-        unsigned = signer.unsign(session_token, max_age=3600)
+        unsigned = signer.unsign(session_token, max_age=COOKIE_LIFETIME)
     except BadSignature:
         raise HTTPException(status_code=401, detail="Недействительная сессия")
 
@@ -36,7 +37,7 @@ def refresh_token(session_token: str):
 
 
 @app.post("/login")
-async def login(data: LoginData, request: Request, response: Response, session_token: Optional[str] = Cookie(None)):
+async def login(data: LoginData, response: Response, session_token: Optional[str] = Cookie(None)):
     user = next(
         (u for u in users if u["username"] == data.username and u["password"] == data.password),
         None
@@ -44,12 +45,6 @@ async def login(data: LoginData, request: Request, response: Response, session_t
     
     if not user:
         raise HTTPException(status_code=401, detail="Неверные учетные данные")
-    
-    token = request.cookies.get("session_token")
-
-    if token:
-        token = refresh_token(token)
-        return {"message": "Сессия обновлена."}
     
     # Создаём токен
     signature = signer.sign(user["id"]).decode()
@@ -59,7 +54,8 @@ async def login(data: LoginData, request: Request, response: Response, session_t
         key="session_token",
         value=signature,
         httponly=True,
-        max_age=3600,
+        secure=False,
+        max_age=COOKIE_LIFETIME,
         samesite="lax"
     )
     
