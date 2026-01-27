@@ -212,6 +212,3 @@ docker-compose up --build
 4. Отправьте ветку (`git push origin feature/amazing-feature`)
 5. Создайте Pull Request
 
----
-
-**Счастливого изучения FastAPI! 🎉**
