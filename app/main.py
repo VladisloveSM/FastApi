@@ -2,7 +2,7 @@ from fastapi import FastAPI, Cookie, HTTPException, Request, Response, Depends
 from app.models import Feedback, LoginData
 from typing import Optional
 from datetime import datetime, timedelta
-from itsdangerous import BadSignature, TimestampSigner
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer  
 import uuid
 
 app = FastAPI() 
@@ -10,8 +10,9 @@ app = FastAPI()
 feedbacks = []
 
 COOKIE_LIFETIME = 300  # 5 minutes in seconds
+REFRESH_TIME = 180 # 3 minutes in seconds
 SECRET_KEY = 'supersecretkey'
-signer = TimestampSigner(SECRET_KEY)
+serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 users = [
     {"id": str(uuid.uuid4()), "username": "admin", "password": "secret"},
@@ -22,32 +23,40 @@ users = [
 
 def verify_session(session_token: Optional[str] = Cookie(None)):
     if session_token is None:
-        raise HTTPException(status_code=401, detail="Cookie не найдена")
+        raise HTTPException(status_code=401, detail="Cookie not found")
     try:
-        unsigned = signer.unsign(session_token, max_age=COOKIE_LIFETIME)
+        unsigned = serializer.loads(session_token, max_age=COOKIE_LIFETIME)
+    except SignatureExpired:
+        raise HTTPException(status_code=401, detail="Session expired")
     except BadSignature:
-        raise HTTPException(status_code=401, detail="Недействительная сессия")
+        raise HTTPException(status_code=401, detail="Invalid session")
 
     return session_token
 
 
 def refresh_token(session_token: str):
-    # Needs to be implemented properly in a real-world scenario
-    return { "message": "Сессия обновлена" }
+    data, timestamp = serializer.loads(session_token, max_age=COOKIE_LIFETIME, return_timestamp=True)
+    age_seconds = (datetime.now().timestamp() - timestamp)
+
+    if age_seconds >= REFRESH_TIME:
+        new_token = serializer.dumps(data, max_age=COOKIE_LIFETIME)
+        return new_token
+    else:
+        return None
 
 
 @app.post("/login")
-async def login(data: LoginData, response: Response, session_token: Optional[str] = Cookie(None)):
+async def login(data: LoginData, response: Response):
     user = next(
         (u for u in users if u["username"] == data.username and u["password"] == data.password),
         None
     )
     
     if not user:
-        raise HTTPException(status_code=401, detail="Неверные учетные данные")
+        raise HTTPException(status_code=401, detail="Incorrect credentials")
     
     # Создаём токен
-    signature = signer.sign(user["id"]).decode()
+    signature = serializer.dumps(user["id"])
     
     # Устанавливаем cookie (перезапишет если была)
     response.set_cookie(
@@ -58,23 +67,34 @@ async def login(data: LoginData, response: Response, session_token: Optional[str
         max_age=COOKIE_LIFETIME,
         samesite="lax"
     )
-    
-    return {"message": "Успешный вход"}
+
+    return {"message": "Successful login"}
 
 
 @app.get("/profile")
-async def get_user(session_token: str = Depends(verify_session)):
-    return {"message": f"Пользователь ваша сессия: {session_token}"}
+async def get_user(session_token: str = Depends(verify_session), response: Response = None):
+    new_token = refresh_token(session_token)
+    if new_token:
+        response.set_cookie(
+            key="session_token",
+            value=new_token,
+            httponly=True,
+            secure=False,
+            max_age=COOKIE_LIFETIME,
+            samesite="lax"
+        )
+        return {"message": f"User your session: {session_token}"}
+    else:
+        return {"message": f"You don't need to refresh your session: {session_token}"}
 
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
     feedbacks.append(feedback)
     if is_premium:
-        message = f"Спасибо, {feedback.name}! Ваш отзыв сохранён. Ваш отзыв будет рассмотрен в приоритетном порядке."
+        message = f"Thank you, {feedback.name}! Your feedback has been saved. Your feedback will be reviewed with priority."
     else:
-        message = f"Спасибо, {feedback.name}! Ваш отзыв сохранён."
-
+        message = f"Thank you, {feedback.name}! Your feedback has been saved."
     return { "message": message }
 
 
