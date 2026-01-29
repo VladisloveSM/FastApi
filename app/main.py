@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Cookie, HTTPException, Request, Response, Depends
 from app.models import Feedback, LoginData
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer  
 import uuid
 
@@ -36,10 +36,10 @@ def verify_session(session_token: Optional[str] = Cookie(None)):
 
 def refresh_token(session_token: str):
     data, timestamp = serializer.loads(session_token, max_age=COOKIE_LIFETIME, return_timestamp=True)
-    age_seconds = (datetime.now().timestamp() - timestamp)
+    age_seconds = (datetime.now(timezone.utc) - timestamp).total_seconds()
 
     if age_seconds >= REFRESH_TIME:
-        new_token = serializer.dumps(data, max_age=COOKIE_LIFETIME)
+        new_token = serializer.dumps(data)
         return new_token
     else:
         return None
@@ -68,7 +68,7 @@ async def login(data: LoginData, response: Response):
         samesite="lax"
     )
 
-    return {"message": "Successful login"}
+    return {"message": f"Successful login. Your cookie: {signature}"}
 
 
 @app.get("/profile")
@@ -83,7 +83,7 @@ async def get_user(session_token: str = Depends(verify_session), response: Respo
             max_age=COOKIE_LIFETIME,
             samesite="lax"
         )
-        return {"message": f"User your session: {session_token}"}
+        return {"message": f"User your new session: {new_token}"}
     else:
         return {"message": f"You don't need to refresh your session: {session_token}"}
 
