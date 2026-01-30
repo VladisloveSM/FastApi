@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Cookie, HTTPException, Request, Response, Depends
+from fastapi import FastAPI, Cookie, HTTPException, Request, Response, Depends, Header
 from app.models import Feedback, LoginData
-from typing import Optional
+from typing import Annotated, Optional
 from datetime import datetime, timedelta, timezone
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer  
 import uuid
@@ -44,6 +44,9 @@ def refresh_token(session_token: str):
     else:
         return None
 
+@app.get("/item")
+async def read_item(item: Annotated[str | None, Header()] = None):
+    return { "item": item } 
 
 @app.post("/login")
 async def login(data: LoginData, response: Response):
