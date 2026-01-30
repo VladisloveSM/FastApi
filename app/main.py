@@ -1,3 +1,4 @@
+import re
 from fastapi import FastAPI, Cookie, HTTPException, Response, Depends, Header
 from app.models import Feedback
 from typing import Dict, Optional
@@ -6,22 +7,26 @@ app = FastAPI()
 
 feedbacks = []
 
-def verify_headers(user_agent: Optional[str] = Header(default=None), accept_language: Optional[str] = Header(default=None)) -> Dict[str, str]:
-    valid = True
+def verify_user_agent(user_agent: Optional[str] = Header(default=None)):
     if user_agent is None or user_agent.strip() == "":
-        valid = False
+        raise HTTPException(status_code=400, detail=f"Invalid request.")
+    return user_agent
+
+def varify_accept_language(accept_language: Optional[str] = Header(default=None)):
     if accept_language is None or accept_language.strip() == "":
-        valid = False
-    if not valid:
         raise HTTPException(status_code=400, detail=f"Invalid request.")
     
-    return { "User-Agent": user_agent, "Accept-Language": accept_language }
-    
+    pattern = r'^[a-zA-Z]{2}(-[a-zA-Z]{2})?(;q=[0-9]\.?[0-9]?)?(,\s*[a-zA-Z]{2}(-[a-zA-Z]{2})?(;q=[0-9]\.?[0-9]?)?)*$'
+
+    if not re.match(pattern, accept_language):
+        raise HTTPException(status_code=400, detail=f"Invalid request.")
+
+    return accept_language
 
 
 @app.get("/headers")
-async def read_headers(headers: Dict[str, str] = Depends(verify_headers)):
-    return headers
+async def read_headers(user_agent: str = Depends(verify_user_agent), accept_language: str = Depends(varify_accept_language)):
+    return { "User-Agent": user_agent, "Accept-Language": accept_language }
 
 
 @app.post("/feedback")
