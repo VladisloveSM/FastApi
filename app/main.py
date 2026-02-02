@@ -1,4 +1,4 @@
-import re
+from datetime import datetime
 from fastapi import FastAPI, Cookie, HTTPException, Response, Depends, Header
 from app.models import Feedback, CommonHeaders
 
@@ -10,6 +10,16 @@ feedbacks = []
 async def read_headers(headers: CommonHeaders = Depends(CommonHeaders.get_common_headers)):
     return { "User-Agent": headers.user_agent, "Accept-Language": headers.accept_language }
 
+@app.get("/info")
+async def set_cookie(response: Response, headers: CommonHeaders = Depends(CommonHeaders.get_common_headers)):
+    response.headers["X-Server-Time"] = datetime.utcnow().isoformat()
+    return {    
+                "Message": "Welcome, your headers successfully handled.",
+                "headers": {
+                    "User-Agent": headers.user_agent, 
+                    "Accept-Language": headers.accept_language
+                }
+            }
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
