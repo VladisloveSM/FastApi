@@ -8,7 +8,7 @@ feedbacks = []
 
 @app.get("/headers")
 async def read_headers(headers: CommonHeaders = Depends(CommonHeaders.get_common_headers)):
-    return { "User-Agent": headers.user_agent, "Accept-Language": headers.accept_language }
+    return { "User-Agent": headers.user_agent, "Accept-Language": headers.accept_language, "X-Current-Version": headers.x_current_version }
 
 @app.get("/info")
 async def set_cookie(response: Response, headers: CommonHeaders = Depends(CommonHeaders.get_common_headers)):

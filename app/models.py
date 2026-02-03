@@ -11,21 +11,15 @@ class CommonHeaders(BaseModel):
 
     @field_validator('user_agent')
     def verify_user_agent(cls, value) -> str:
-        if not validators.verify_user_agent(value):
-            raise HTTPException(status_code=400, detail=f"Invalid request.")
-        return value
+        return validators.verify_user_agent(value)
 
     @field_validator('accept_language')
     def verify_accept_language(cls, value) -> str:
-        if not validators.varify_accept_language(value):
-            raise HTTPException(status_code=400, detail=f"Invalid request.")
-        return value
+        return validators.varify_accept_language(value)
     
     @field_validator('x_current_version')
     def verify_x_current_version(cls, value) -> str:
-        if not validators.verify_x_current_version(value):
-            raise HTTPException(status_code=422, detail=f"Need to update app.")
-        return value
+        return validators.verify_x_current_version(value)
     
 
     def get_common_headers(
