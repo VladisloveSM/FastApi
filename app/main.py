@@ -17,7 +17,8 @@ async def set_cookie(response: Response, headers: CommonHeaders = Depends(Common
                 "Message": "Welcome, your headers successfully handled.",
                 "headers": {
                     "User-Agent": headers.user_agent, 
-                    "Accept-Language": headers.accept_language
+                    "Accept-Language": headers.accept_language,
+                    "X-Current-Version": headers.x_current_version
                 }
             }
 
