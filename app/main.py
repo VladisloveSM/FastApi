@@ -22,14 +22,14 @@ def check_auth(username: str, password: str):
         raise HTTPException(
             status_code=401,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={"WWW-Authenticate": "Basic realm=\"App\""},
         )
     
     return User(username=user["username"], password=user["password"])
 
 @app.get("/login")
 async def login(user: User = Depends(check_auth)):
-    return { "username": user.username, "password": user.password }
+    return { "message": "You got my secret, welcome" }
 
 
 @app.post("/feedback")
