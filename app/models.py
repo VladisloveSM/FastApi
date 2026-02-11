@@ -1,4 +1,3 @@
-from fastapi import Header
 from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional
 import app.validators as validators
@@ -15,7 +14,7 @@ class Contact(BaseModel):
     @field_validator('phone')
     def check_phone(cls, value) -> str:
         if not validators.validate_phone(value):
-            raise ValueError("Номер телефона должен содержать только цифры!")
+            raise ValueError("The phone number must contain only numbers!")
         return value
 
 
@@ -28,5 +27,5 @@ class Feedback(BaseModel):
     @field_validator('message')
     def check_message(cls, value) -> str:
         if not validators.validate_feedback(value):
-            raise ValueError("Использование недопустимых слов!")
+            raise ValueError("Use of unacceptable words!")
         return value
