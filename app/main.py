@@ -1,8 +1,9 @@
-from datetime import datetime
-from fastapi import FastAPI, Response, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from app.models import Feedback, User
+from passlib.context import CryptContext
 
-app = FastAPI() 
+app = FastAPI()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 users = [
     { "username": "admin", "password": "admin" },
