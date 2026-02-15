@@ -1,36 +1,61 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from app.models import Feedback, User
 from passlib.context import CryptContext
+import secrets
 
 app = FastAPI()
+security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-users = [
-    { "username": "admin", "password": "admin" },
-    { "username": "user", "password": "user" },
-    { "username": "guest", "password": "guest" }
-]
+fake_users_db = {
+    "admin": {
+        "username": "admin",
+        "hashed_password": pwd_context.hash("secretpassword")
+    },
+    "user": {
+        "username": "user",
+        "hashed_password": pwd_context.hash("userpass123")
+    }
+}
 
 feedbacks = []
 
-def check_auth(username: str, password: str):
-    user = next(
-        (u for u in users if u["username"] == username and u["password"] == password),
-        None
-    )
-
+def auth_user(credentials: HTTPBasicCredentials = Depends(security)):
+    user = fake_users_db.get(credentials.username)
+    
     if user is None:
         raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Basic realm=\"App\""},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверное имя пользователя или пароль",
+            headers={"WWW-Authenticate": "Basic"},
         )
     
-    return User(username=user["username"], password=user["password"])
-
-@app.get("/login")
-async def login(user: User = Depends(check_auth)):
-    return { "message": "You got my secret, welcome" }
+    username_matches = secrets.compare_digest(
+        credentials.username.encode("utf-8"),
+        user["username"].encode("utf-8")
+    )
+    
+    if not username_matches:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверное имя пользователя или пароль",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    
+    password_correct = pwd_context.verify(
+        credentials.password, 
+        user["hashed_password"]
+    )
+    
+    if not password_correct:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверное имя пользователя или пароль",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    
+    return user
 
 
 @app.post("/feedback")
