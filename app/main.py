@@ -55,12 +55,13 @@ def auth_user(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/register")
 async def register(user: User):
-    fake_users_db.append(UserInDB(username=user.username, hashed_password=pwd_context.hash(user.password)))
+    fake_users_db[user.username] = UserInDB(username=user.username, hashed_password=pwd_context.hash(user.password))
     return {"message": f"User {user.username} registered successfully!"}
 
-@app.get("/users")
-async def read_users():
-    return fake_users_db
+@app.get("/login")
+async def read_users(user = Depends(auth_user)):
+    return {"message": f"Welcome, {user.username}!"}
+
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
