@@ -6,12 +6,19 @@ from environs import Env
 class DatabaseConfig:
     database_url: str
 
+@dataclass
+class DocsConfig:
+    user: str
+    password: str
+
 
 @dataclass
 class Config:
     database: DatabaseConfig
-    seceret_key: str
+    secret_key: str
     debug: bool
+    mode: str
+    docs: DocsConfig
 
 
 def load_config(path: str = None) -> Config:
@@ -20,6 +27,8 @@ def load_config(path: str = None) -> Config:
 
     return Config(
         database=DatabaseConfig(database_url=env("DATABASE_URL")),
-        seceret_key=env("SECRET_KEY"),
+        secret_key=env("SECRET_KEY"),
         debug=env.bool("DEBUG", default=False),
+        mode=env("MODE"),
+        docs=DocsConfig(user=env("DOCS_USER"), password=env("DOCS_PASSWORD")),
     )

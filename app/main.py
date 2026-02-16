@@ -1,12 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from app.models import Feedback, User, UserInDB
+from app.config import load_config
 from passlib.context import CryptContext
 import secrets
 
 app = FastAPI()
 security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+config = load_config()
 
 fake_users_db = {
     "admin": UserInDB(
@@ -52,6 +54,10 @@ def auth_user(credentials: HTTPBasicCredentials = Depends(security)):
         )
     
     return user
+
+@app.get("/config")
+async def read_config():
+    return {"mode": f"{config.mode}"}
 
 @app.post("/register")
 async def register(user: User):
