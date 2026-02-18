@@ -1,12 +1,21 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 from app.models import Feedback, User, UserInDB
 from app.config import load_config
 from passlib.context import CryptContext
 import secrets
 
-app = FastAPI()
+app = FastAPI(
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,   
+)
+
 security = HTTPBasic()
+security_docs = HTTPBasic()
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 config = load_config()
 
@@ -22,6 +31,27 @@ fake_users_db = {
 }
 
 feedbacks = []
+
+def verify_docs_credentials(
+    credentials: HTTPBasicCredentials = Depends(security_docs)
+):
+    correct_username = secrets.compare_digest(
+        credentials.username,
+        config.docs.user
+    )
+    correct_password = secrets.compare_digest(
+        credentials.password,
+        config.docs.password
+    )
+
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+    return credentials.username
 
 def auth_user(credentials: HTTPBasicCredentials = Depends(security)):
 
@@ -54,6 +84,26 @@ def auth_user(credentials: HTTPBasicCredentials = Depends(security)):
         )
     
     return user
+
+if config.mode == "DEV":
+    @app.get("/docs", include_in_schema=False)
+    async def get_swagger_docs(
+        username: str = Depends(verify_docs_credentials)
+    ):
+        return get_swagger_ui_html(
+            openapi_url="/openapi.json",
+            title="API Docs"
+        )
+
+    @app.get("/openapi.json", include_in_schema=False)
+    async def get_openapi_schema(
+        username: str = Depends(verify_docs_credentials)
+    ):
+        return get_openapi(
+            title=app.title,
+            version=app.version,
+            routes=app.routes,
+        )
 
 @app.get("/config")
 async def read_config():
