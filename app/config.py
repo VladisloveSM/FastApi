@@ -4,7 +4,6 @@ from enum import Enum
 import sys
 
 class AppMode(str, Enum):
-    """Допустимые режимы работы приложения"""
     PROD = "PROD"
     DEV = "DEV"
 
