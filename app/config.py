@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from environs import Env
+from enum import Enum
+import sys
 
+class AppMode(str, Enum):
+    """Допустимые режимы работы приложения"""
+    PROD = "PROD"
+    DEV = "DEV"
 
 @dataclass
 class DatabaseConfig:
@@ -29,6 +35,6 @@ def load_config(path: str = None) -> Config:
         database=DatabaseConfig(database_url=env("DATABASE_URL")),
         secret_key=env("SECRET_KEY"),
         debug=env.bool("DEBUG", default=False),
-        mode=env("MODE"),
+        mode=AppMode(env("MODE")),
         docs=DocsConfig(user=env("DOCS_USER"), password=env("DOCS_PASSWORD")),
     )
