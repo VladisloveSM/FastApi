@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from environs import Env
 from enum import Enum
-import sys
 
 class AppMode(str, Enum):
     PROD = "PROD"
