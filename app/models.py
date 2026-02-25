@@ -3,14 +3,9 @@ from typing import Optional
 import app.validators as validators
 
 
-class UserBase(BaseModel):
+class User(BaseModel):
     username: str
-
-class User(UserBase):
     password: str
-
-class UserInDB(UserBase):
-    hashed_password: str
 
 class Contact(BaseModel):
     email: EmailStr
