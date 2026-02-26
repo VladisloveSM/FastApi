@@ -5,23 +5,23 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from typing import Dict
 
-# OAuth2PasswordBearer извлекает токен из заголовка "Authorization: Bearer <token>"
-# Параметр tokenUrl указывает маршрут, по которому клиенты смогут получить токен
+# OAuth2PasswordBearer extracts the token from the header "Authorization: Bearer <token>"
+# The tokenUrl parameter specifies the route by which clients can obtain a token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-SECRET_KEY = "mysecretkey"  # В реальной практике генерируйте ключ, например, с помощью 'openssl rand -hex 32', и храните его в безопасности
+SECRET_KEY = "mysecretkey"  # In real practice, generate a key, for example, using “openssl rand -hex 32”, and store it securely.
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Время жизни токена
+ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Timelife of token
 
-# Функция для создания JWT токена с заданным временем жизни
+# Function for creating a JWT token with a specified lifetime
 def create_jwt_token(data: Dict):
     """
     Функция для создания JWT токена. Мы копируем входные данные, добавляем время истечения и кодируем токен.
     """
-    to_encode = data.copy()  # Копируем данные, чтобы не изменить исходный словарь
-    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Задаем время истечения токена
-    to_encode.update({"exp": expire})  # Добавляем время истечения в данные токена
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)  # Кодируем токен с использованием секретного ключа и алгоритма
+    to_encode = data.copy()  # Copy the data so as not to change the original dictionary.
+    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Set the token expiry time
+    to_encode.update({"exp": expire})  # Add the expiry time to the token data
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)  # Encrypt the token using a secret key and algorithm
 
 # Функция для получения пользователя из токена
 def get_user_from_token(token: str = Depends(oauth2_scheme)):
@@ -29,9 +29,9 @@ def get_user_from_token(token: str = Depends(oauth2_scheme)):
     Функция для извлечения информации о пользователе из токена. Проверяем токен и извлекаем утверждение о пользователе.
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Декодируем токен с помощью секретного ключа
-        return payload.get("sub")  # Возвращаем утверждение о пользователе (subject) из полезной нагрузки
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Decode the token using the secret key
+        return payload.get("sub")  # Return the user (subject) statement from the payload
     except jwt.ExpiredSignatureError:
-        pass  # Обработка ошибки истечения срока действия токена
+        pass  # Handling token expiry errors
     except jwt.InvalidTokenError:
-        pass  # Обработка ошибки недействительного токена
+        pass  # Handling invalid token error
