@@ -25,6 +25,6 @@ def get_user_from_token(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Decode the token using the secret key
         return payload.get("sub")  # Return the user (subject) statement from the payload
     except jwt.ExpiredSignatureError:
-        pass  # Handling token expiry errors
+        raise ValueError("Token has expired")  # Handling token expiry errors
     except jwt.InvalidTokenError:
-        pass  # Handling invalid token error
+        raise ValueError("Invalid token")  # Handling invalid token error
