@@ -1,4 +1,3 @@
-# security.py
 import jwt
 import datetime
 from fastapi import Depends
@@ -15,9 +14,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Timelife of token
 
 # Function for creating a JWT token with a specified lifetime
 def create_jwt_token(data: Dict):
-    """
-    Функция для создания JWT токена. Мы копируем входные данные, добавляем время истечения и кодируем токен.
-    """
     to_encode = data.copy()  # Copy the data so as not to change the original dictionary.
     expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Set the token expiry time
     to_encode.update({"exp": expire})  # Add the expiry time to the token data
@@ -25,9 +21,6 @@ def create_jwt_token(data: Dict):
 
 # Функция для получения пользователя из токена
 def get_user_from_token(token: str = Depends(oauth2_scheme)):
-    """
-    Функция для извлечения информации о пользователе из токена. Проверяем токен и извлекаем утверждение о пользователе.
-    """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Decode the token using the secret key
         return payload.get("sub")  # Return the user (subject) statement from the payload

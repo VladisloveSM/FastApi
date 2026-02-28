@@ -3,7 +3,7 @@ from app.models import Feedback, User
 from app.config import load_config
 from passlib.context import CryptContext
 from app.db import get_user, USERS_DATA
-from security import create_jwt_token, get_user_from_token
+from app.security import create_jwt_token, get_user_from_token
 
 app = FastAPI()
 
