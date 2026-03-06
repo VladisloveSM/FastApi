@@ -23,11 +23,7 @@ async def register(user: User):
 
 @app.post("/login")
 async def login(user_in: User): 
-    user = get_user(user_in.username)
-    if not user:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
-    if not CryptContext(schemes=["bcrypt"], deprecated="auto").verify(user_in.password, user.get("password")):
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    result = get_user(user_in.username, user_in.password)
     access_token = create_jwt_token({"sub": user_in.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
