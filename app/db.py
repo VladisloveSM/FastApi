@@ -1,8 +1,7 @@
 # db.py
 # User database simulation
 
-USERS_DATA = [
-    {"username": "admin", "password": "adminpass"}  # In a real database, passwords should be stored as hashes.
+USERS_DATA = [ # In a real database, passwords should be stored as hashes.
 ]
 
 def get_user(username: str):
