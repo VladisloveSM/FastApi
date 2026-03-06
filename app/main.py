@@ -22,11 +22,8 @@ async def login(user_in: User):
 
 
 # Secure route that returns user information
-@app.get("/about_me")
+@app.get("/protected_resource")
 async def about_me(current_user: str = Depends(get_user_from_token)):
-    """
-    Этот маршрут защищен и требует токен. Если токен действителен, мы возвращаем информацию о пользователе.
-    """
     user = get_user(current_user)
     if user:
         return user
