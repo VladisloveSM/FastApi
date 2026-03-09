@@ -5,6 +5,18 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 USERS_DATA = [
+    {
+        "username": "admin",
+        "password": pwd_context.hash("admin")
+    },
+    {
+        "username": "user",
+        "password": pwd_context.hash("user")
+    },
+    {
+        "username": "pass",
+        "password": pwd_context.hash("pass")
+    },
 ]
 
 def get_user(username: str, password: str):
