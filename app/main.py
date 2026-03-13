@@ -20,18 +20,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 feedbacks = []
 
-@app.post("/register")
-@limiter.limit("1/minute") # Limit the registration endpoint to 1 request per minute per IP address
-async def register(user: User, request: Request):
-    for existing_user in USERS_DATA:
-        if secrets.compare_digest(existing_user.get("username").encode("utf-8"), user.username.encode("utf-8")):
-            raise HTTPException(status_code=409, detail="User already exists")
-    USERS_DATA.append({"username": user.username, "password": pwd_context.hash(user.password)})
-    return {"message": "User registered successfully"}
-
 @app.post("/login")
-@limiter.limit("5/minute")
-async def login(user_in: User, request: Request): 
+async def login(user_in: User): 
     result = get_user(user_in.username, user_in.password)
     access_token = create_jwt_token({"sub": user_in.username})
     return {"access_token": access_token, "token_type": "bearer"}

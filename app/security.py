@@ -10,7 +10,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 SECRET_KEY = "mysecretkey"  # In real practice, generate a key, for example, using “openssl rand -hex 32”, and store it securely.
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Timelife of token
+ACCESS_TOKEN_EXPIRE_MINUTES = 1  # Timelife of token
+REFRESH_TOKEN_EXPIRE_MINUTES = 3  # Timelife of token
 
 # Function for creating a JWT token with a specified lifetime
 def create_jwt_token(data: Dict):
