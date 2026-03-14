@@ -7,6 +7,12 @@ class User(BaseModel):
     username: str
     password: str
 
+
+class UserToken(BaseModel):
+    username: str
+    refresh_token: str
+
+
 class Contact(BaseModel):
     email: EmailStr
     phone: Optional[str] = Field(default=None, min_length=7, max_length=15)
