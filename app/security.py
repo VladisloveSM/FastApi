@@ -13,12 +13,18 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1  # Timelife of token
 REFRESH_TOKEN_EXPIRE_MINUTES = 3  # Timelife of token
 
-# Function for creating a JWT token with a specified lifetime
+# Function for creating a JWT tokens with a specified lifetime
 def create_jwt_token(data: Dict):
     to_encode = data.copy()  # Copy the data so as not to change the original dictionary.
     expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Set the token expiry time
     to_encode.update({"exp": expire})  # Add the expiry time to the token data
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)  # Encrypt the token using a secret key and algorithm
+    to_encode.update({"type": "access"})  # Add the subject (user) to the token data
+    
+    refresh_token_data = data.copy()  # Create a copy of the data for the refresh token
+    refresh_token_expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)  # Set the refresh token expiry time
+    refresh_token_data.update({"exp": refresh_token_expire})  # Add the expiry time
+    refresh_token_data.update({"type": "refresh"})  # Add the expiry time
+    return (jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM), jwt.encode(refresh_token_data, SECRET_KEY, algorithm=ALGORITHM))
 
 # Функция для получения пользователя из токена
 def get_user_from_token(token: str = Depends(oauth2_scheme)):

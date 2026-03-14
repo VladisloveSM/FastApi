@@ -4,6 +4,8 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+refresh_tokens = {}
+
 USERS_DATA = [
     {
         "username": "admin",

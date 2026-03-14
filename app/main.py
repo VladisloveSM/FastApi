@@ -2,12 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from app.models import Feedback, User
 from app.config import load_config
 from passlib.context import CryptContext
-from app.db import get_user, USERS_DATA
+from app.db import get_user, refresh_tokens
 from app.security import create_jwt_token, get_user_from_token
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-import secrets
 
 app = FastAPI()
 
@@ -23,8 +22,9 @@ feedbacks = []
 @app.post("/login")
 async def login(user_in: User): 
     result = get_user(user_in.username, user_in.password)
-    access_token = create_jwt_token({"sub": user_in.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token, refresh_token = create_jwt_token({"sub": user_in.username})
+    refresh_tokens[user_in.username] = refresh_token
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 # Secure route that returns user information
 @app.get("/protected_resource")
