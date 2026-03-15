@@ -27,10 +27,22 @@ def create_jwt_token(data: Dict):
     return (jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM), jwt.encode(refresh_token_data, SECRET_KEY, algorithm=ALGORITHM))
 
 # Функция для получения пользователя из токена
-def get_user_from_refresh_token(token: str = Depends(oauth2_scheme)):
+def get_user_from_refresh_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Decode the token using the secret key
         if payload.get("type") != "refresh":  # Return the user (subject) statement from the payload
+            raise ValueError("Invalid token type")
+        return payload.get("sub")  # Return the user (subject) statement from the payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")  # Handling token expiry errors
+    except jwt.InvalidTokenError:
+        raise ValueError("Invalid token")  # Handling invalid token error
+    
+    
+def get_user_from_access_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # Decode the token using the secret key
+        if payload.get("type") != "access":  # Return the user (subject) statement from the payload
             raise ValueError("Invalid token type")
         return payload.get("sub")  # Return the user (subject) statement from the payload
     except jwt.ExpiredSignatureError:

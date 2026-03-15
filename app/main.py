@@ -3,7 +3,7 @@ from app.models import Feedback, User, UserToken
 from app.config import load_config
 from passlib.context import CryptContext
 from app.db import get_user, refresh_tokens
-from app.security import create_jwt_token, get_user_from_refresh_token
+from app.security import create_jwt_token, get_user_from_refresh_token, get_user_from_access_token
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -38,16 +38,6 @@ async def refresh_token(user: UserToken, request: Request):
     access_token, refresh_token = create_jwt_token({"sub": user.username})
     refresh_tokens[user.username] = refresh_token
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
-
-
-# Secure route that returns user information
-@app.get("/protected_resource")
-async def about_me(current_user: str):
-    user = get_user(current_user)
-    if user:
-        return user
-    
-    return {"error": "User not found"}
 
 
 @app.post("/feedback")
