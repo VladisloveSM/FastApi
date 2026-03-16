@@ -40,6 +40,12 @@ async def refresh_token(user: UserToken, request: Request):
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
+@app.get("/protected_resource")
+async def about_me(current_user: str = Depends(get_user_from_access_token)):
+    if current_user:
+        return { "message": f"Hello, {current_user}! Access token is correct))" }
+
+
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
     feedbacks.append(feedback)
