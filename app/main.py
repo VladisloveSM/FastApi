@@ -1,49 +1,53 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
-from app.models import Feedback, User, UserToken
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from app.models import Feedback, User, UserLogin
 from app.config import load_config
+from app.security import create_jwt_token, get_current_user, get_user
+from app.db import USERS_DATA
 from passlib.context import CryptContext
-from app.db import get_user, refresh_tokens
-from app.security import create_jwt_token, get_user_from_refresh_token, get_user_from_access_token
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from app.rbac import PermissionChecker
 
 app = FastAPI()
+# Set Config
+config = load_config()
 
+# Set Limiter
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-config = load_config()
+#Set hash metod
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 feedbacks = []
 
 @app.post("/login")
-async def login(user_in: User): 
-    result = get_user(user_in.username, user_in.password)
-    access_token, refresh_token = create_jwt_token({"sub": user_in.username})
-    refresh_tokens[user_in.username] = refresh_token
-    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+async def login(user_in: UserLogin):
+    for user in USERS_DATA:
+        if user["username"] == user_in.username and user["password"] == user_in.password:
+            # Generate a JWT token for the user
+            token = create_jwt_token({"sub": user_in.username})
+            return {"access_token": token, "token_type": "bearer"}
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
+@app.get("/admin")
+@PermissionChecker(["admin"])
+async def admin_info(current_user: User = Depends(get_current_user)):
+    return {"message": f"Hello, {current_user.username}! Welcome to the admin page."}
 
-@app.post("/refresh")
-@limiter.limit("5/minute")
-async def refresh_token(user: UserToken, request: Request):
-    if refresh_tokens.get(user.username) != user.refresh_token:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-    result = get_user_from_refresh_token(user.refresh_token)
-    if result != user.username:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-    access_token, refresh_token = create_jwt_token({"sub": user.username})
-    refresh_tokens[user.username] = refresh_token
-    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+@app.get("/user")
+@PermissionChecker(["user"])
+async def user_info(current_user: User = Depends(get_current_user)):
+    """Route for users"""
+    return {"message": f"Hello, {current_user.username}! Welcome to the user page."}
 
+@app.get("/about_me")
+async def about_me(current_user: User = Depends(get_current_user)):
+    """Information about the current user"""
+    return current_user
 
-@app.get("/protected_resource")
-async def about_me(current_user: str = Depends(get_user_from_access_token)):
-    if current_user:
-        return { "message": f"Hello, {current_user}! Access token is correct))" }
 
 
 @app.post("/feedback")
