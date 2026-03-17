@@ -5,12 +5,14 @@ import app.validators as validators
 
 class User(BaseModel):
     username: str
-    password: str
+    full_name: str | None = None
+    email: EmailStr | None = None
+    disabled: bool = False
+    roles: list[str]  # List of user roles
 
-
-class UserToken(BaseModel):
+class UserLogin(BaseModel):
     username: str
-    refresh_token: str
+    password: str
 
 
 class Contact(BaseModel):
