@@ -19,7 +19,7 @@ USERS_DATA = [
     },
 ]
 
-def get_user(username: str) -> User:
+def get_user(username: str) -> User | None:
     for user_data in USERS_DATA:
         if user_data["username"] == username:
             return User(**{k: v for k, v in user_data.items() if k != "password"})

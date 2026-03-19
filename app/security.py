@@ -1,33 +1,50 @@
-import jwt
 import datetime
-from app.db import get_user
-from app.models import User
+import jwt
+from db import get_user
+from models import User
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, Depends, Request, status
 
-# We define the authentication scheme (OAuth2 with password)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-SECRET_KEY = "mysecretkey"  # Generate using `openssl rand -hex 32`
+# Should kepp in the .env
+SECRET_KEY = "mysecretkey"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15 
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
-def create_jwt_token(data: dict):
-    """Creating a JWT token with an expiry time"""
+def create_jwt_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})  
+    expire = datetime.datetime.utcnow() + datetime.timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_user_from_token(token: str = Depends(oauth2_scheme)):
-    """Get user information from the token"""
+def decode_token(token: str) -> str:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) 
-        return payload.get("sub")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Authorization error")
+
+def get_user_from_token(token: str = Depends(oauth2_scheme)) -> str:
+    return decode_token(token)
+
+def username_from_request(request: Request) -> str:
+    auth = request.headers.get("authorization", "")
+    prefix = "bearer "
+    if not auth.lower().startswith(prefix):
+        return "anonymous"
+    token = auth[len(prefix):].strip()
+    try:
+        return decode_token(token)
+    except HTTPException:
+        return "anonymous"
 
 def get_current_user(current_username: str = Depends(get_user_from_token)) -> User:
     """Get the current user based on their username from the token"""
