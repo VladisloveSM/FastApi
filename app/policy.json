@@ -14,6 +14,13 @@
       "actions": ["view_user"],
       "resource": { "type": "page" },
       "condition": { "hasAny": [ { "attr": "subject.roles" }, ["user"] ] }
+    },
+    {
+      "id": "guest_can_view_guest_page",
+      "effect": "permit",
+      "actions": ["view_guest"],
+      "resource": { "type": "page" },
+      "condition": { "hasAny": [ { "attr": "subject.roles" }, ["guest"] ] }
     }
   ]
 }

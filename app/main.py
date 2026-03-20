@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from app.models import Feedback, User, UserLogin
 from app.config import load_config
-from app.security import create_jwt_token, get_current_user, get_user
+from app.security import create_jwt_token, get_current_user
 from app.db import USERS_DATA
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler

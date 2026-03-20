@@ -17,6 +17,14 @@ USERS_DATA = [
         "email": "user@example.com",
         "disabled": False
     },
+    {
+        "username": "guest",
+        "password": "guestpass",
+        "roles": ["guest"],
+        "full_name": "Guest User",
+        "email": "guest@example.com",
+        "disabled": False
+    },
 ]
 
 def get_user(username: str) -> User | None:
