@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request
-from app.models import Feedback, User, UserLogin
+from app.models import Feedback, User, UserLogin, Data
 from app.config import load_config
 from app.security import create_jwt_token, get_current_user
-from app.db import USERS_DATA
+from app.db import USERS_DATA, RESOURCE
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -31,6 +31,14 @@ async def login(user_in: UserLogin):
             token = create_jwt_token({"sub": user_in.username})
             return {"access_token": token, "token_type": "bearer"}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
+
+
+@app.get("/create")
+@PermissionChecker(["admin", "user"])
+async def create_resource(data: Data, current_user: User = Depends(get_current_user)):
+    """Create a resource with the provided data"""
+    RESOURCE[data.id] = {"id": data.id, "data": data.data}
+    return {"id": data.id, "data": data.data}
 
 @app.get("/admin")
 @PermissionChecker(["admin"])

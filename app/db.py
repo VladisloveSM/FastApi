@@ -1,4 +1,4 @@
-from models import User
+from models import User, Data
 
 USERS_DATA = [
     {
@@ -26,6 +26,9 @@ USERS_DATA = [
         "disabled": False
     },
 ]
+
+RESOURCE = {}
+
 
 def get_user(username: str) -> User | None:
     for user_data in USERS_DATA:

@@ -15,6 +15,11 @@ class UserLogin(BaseModel):
     password: str
 
 
+class Data(BaseModel):
+    id: str
+    data: str
+
+
 class Contact(BaseModel):
     email: EmailStr
     phone: Optional[str] = Field(default=None, min_length=7, max_length=15)
