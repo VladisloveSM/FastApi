@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import FastAPI, Depends, HTTPException, status
 from app.models import Feedback, User, UserLogin, Data
 from app.config import load_config
 from app.security import create_jwt_token, get_current_user

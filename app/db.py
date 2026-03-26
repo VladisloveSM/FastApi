@@ -1,4 +1,4 @@
-from models import User, Data
+from models import User
 
 USERS_DATA = [
     {
