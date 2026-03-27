@@ -33,28 +33,28 @@ async def login(user_in: UserLogin):
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
 
-@app.get("/create")
-@PermissionChecker(["admin", "user"])
+@app.get("/create_resource")
+@PermissionChecker(["admin"])
 async def create_resource(data: Data, current_user: User = Depends(get_current_user)):
     """Create a resource with the provided data"""
     RESOURCE[data.id] = {"id": data.id, "data": data.data}
     return {"id": data.id, "data": data.data}
 
-@app.get("/admin")
-@PermissionChecker(["admin"])
-async def admin_info(current_user: User = Depends(get_current_user)):
-    return {"message": f"Hello, {current_user.username}! Welcome to the admin page."}
 
-@app.get("/user")
-@PermissionChecker(["user"])
-async def user_info(current_user: User = Depends(get_current_user)):
-    """Route for users"""
-    return {"message": f"Hello, {current_user.username}! Welcome to the user page."}
+@app.get("/edit_resource")
+@PermissionChecker(["admin", "user"])
+async def edit_resource(data: Data, current_user: User = Depends(get_current_user)):
+    """Edit a resource with the provided data"""
+    if RESOURCE.get(data.id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+    RESOURCE[data.id] = data.data
+    return {"id": data.id, "data": data.data}
 
-@app.get("/about_me")
-async def about_me(current_user: User = Depends(get_current_user)):
-    """Information about the current user"""
-    return current_user
+
+@app.get("/resources")
+@PermissionChecker(["admin", "user", "guest"])
+async def get_resource(current_user: User = Depends(get_current_user)):
+    return RESOURCE
 
 
 
