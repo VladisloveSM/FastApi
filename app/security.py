@@ -1,7 +1,7 @@
 import datetime
 import jwt
-from db import get_user
-from models import User
+from app.db import get_user
+from app.models import User
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, Depends, Request, status
 

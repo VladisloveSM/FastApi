@@ -14,12 +14,12 @@ app = FastAPI()
 config = load_config()
 
 # Set Limiter
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# limiter = Limiter(key_func=get_remote_address)
+# app.state.limiter = limiter
+# app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 #Set hash metod
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 feedbacks = []
 
@@ -33,15 +33,17 @@ async def login(user_in: UserLogin):
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
 
-@app.get("/create_resource")
+@app.post("/create_resource")
 @PermissionChecker(["admin"])
 async def create_resource(data: Data, current_user: User = Depends(get_current_user)):
     """Create a resource with the provided data"""
-    RESOURCE[data.id] = {"id": data.id, "data": data.data}
+    if data.id in RESOURCE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource already exists")
+    RESOURCE[data.id] = data.data
     return {"id": data.id, "data": data.data}
 
 
-@app.get("/edit_resource")
+@app.post("/edit_resource")
 @PermissionChecker(["admin", "user"])
 async def edit_resource(data: Data, current_user: User = Depends(get_current_user)):
     """Edit a resource with the provided data"""
@@ -55,6 +57,11 @@ async def edit_resource(data: Data, current_user: User = Depends(get_current_use
 @PermissionChecker(["admin", "user", "guest"])
 async def get_resource(current_user: User = Depends(get_current_user)):
     return RESOURCE
+
+@app.get("/protected_procedure")
+@PermissionChecker(["admin", "user"])
+async def protected_procedure(current_user: User = Depends(get_current_user)):
+    return {"message": "This is a protected procedure"}
 
 
 
