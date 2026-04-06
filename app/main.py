@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi_limiter.depends import RateLimiter
 from app.models import Feedback, User, UserLogin, Data
 from app.config import load_config
 from app.security import create_jwt_token, get_current_user
-from app.db import USERS_DATA, RESOURCE
+from app.db import USERS_DATA, RESOURCE, get_user
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -23,6 +24,18 @@ config = load_config()
 
 feedbacks = []
 
+
+def get_rate_limit_by_role(user=Depends(get_current_user)):
+    if 'admin' in user["roles"]:
+        return RateLimiter(times=1000, seconds=60)
+    elif 'premium' in user["roles"]:
+        return RateLimiter(times=20, seconds=60)
+    elif 'guest' in user["roles"]:
+        return RateLimiter(times=5, seconds=60)
+    else:
+        return RateLimiter(times=1, seconds=60)
+
+
 @app.post("/login")
 async def login(user_in: UserLogin):
     for user in USERS_DATA:
@@ -35,7 +48,7 @@ async def login(user_in: UserLogin):
 
 @app.post("/create_resource")
 @PermissionChecker(["admin"])
-async def create_resource(data: Data, current_user: User = Depends(get_current_user)):
+async def create_resource(data: Data, limiter=Depends(get_rate_limit_by_role)):
     """Create a resource with the provided data"""
     if data.id in RESOURCE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource already exists")
@@ -45,7 +58,7 @@ async def create_resource(data: Data, current_user: User = Depends(get_current_u
 
 @app.post("/edit_resource")
 @PermissionChecker(["admin", "user"])
-async def edit_resource(data: Data, current_user: User = Depends(get_current_user)):
+async def edit_resource(data: Data, limiter=Depends(get_rate_limit_by_role)):
     """Edit a resource with the provided data"""
     if RESOURCE.get(data.id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
@@ -55,12 +68,12 @@ async def edit_resource(data: Data, current_user: User = Depends(get_current_use
 
 @app.get("/resources")
 @PermissionChecker(["admin", "user", "guest"])
-async def get_resource(current_user: User = Depends(get_current_user)):
+async def get_resource(limiter=Depends(get_rate_limit_by_role)):
     return RESOURCE
 
 @app.get("/protected_procedure")
 @PermissionChecker(["admin", "user"])
-async def protected_procedure(current_user: User = Depends(get_current_user)):
+async def protected_procedure(limiter=Depends(get_rate_limit_by_role)):
     return {"message": "This is a protected procedure"}
 
 
