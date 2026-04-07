@@ -26,11 +26,11 @@ feedbacks = []
 
 
 def get_rate_limit_by_role(user=Depends(get_current_user)):
-    if 'admin' in user["roles"]:
+    if 'admin' in user.roles:
         return RateLimiter(times=1000, seconds=60)
-    elif 'premium' in user["roles"]:
+    elif 'premium' in user.roles:
         return RateLimiter(times=20, seconds=60)
-    elif 'guest' in user["roles"]:
+    elif 'guest' in user.roles:
         return RateLimiter(times=5, seconds=60)
     else:
         return RateLimiter(times=1, seconds=60)
