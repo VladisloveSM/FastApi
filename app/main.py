@@ -32,39 +32,11 @@ async def login(user_in: UserLogin):
             return {"access_token": token, "token_type": "bearer"}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
-
-@app.post("/create_resource")
-@PermissionChecker(["admin"])
-@limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
-async def create_resource(request: Request, data: Data,  current_user: User = Depends(get_current_user)):
-    """Create a resource with the provided data"""
-    if data.id in RESOURCE:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource already exists")
-    RESOURCE[data.id] = data.data
-    return {"id": data.id, "data": data.data}
-
-
-@app.post("/edit_resource")
-@PermissionChecker(["admin", "user"])
-async def edit_resource(request: Request, data: Data,  current_user: User = Depends(get_current_user)):
-    """Edit a resource with the provided data"""
-    if RESOURCE.get(data.id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
-    RESOURCE[data.id] = data.data
-    return {"id": data.id, "data": data.data}
-
-
 @app.get("/resources")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
 async def get_resource(request: Request, current_user: User = Depends(get_current_user)):
     return RESOURCE
-
-@app.get("/protected_procedure")
-@PermissionChecker(["admin", "user"])
-@limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
-async def protected_procedure(request: Request, current_user: User = Depends(get_current_user)):
-    return {"message": "This is a protected procedure"}
 
 
 
