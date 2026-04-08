@@ -52,3 +52,16 @@ def get_current_user(current_username: str = Depends(get_user_from_token)) -> Us
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
+
+def get_rate_limit_by_role(request: Request) -> str:
+    username = username_from_request(request)
+    user = get_user(username) if username != "anonymous" else None
+    roles = user.roles if user else []
+    
+    if "admin" in roles:
+        return "1000/minute"
+    elif "user" in roles:
+        return "20/minute"
+    elif "guest" in roles:
+        return "5/minute"
+    return "1/minute"
