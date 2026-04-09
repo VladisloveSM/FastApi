@@ -16,8 +16,8 @@ class UserLogin(BaseModel):
 
 
 class Data(BaseModel):
-    id: str
-    data: str
+    content: str
+    is_public: bool
 
 
 class Contact(BaseModel):
