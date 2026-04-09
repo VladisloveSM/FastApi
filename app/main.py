@@ -32,7 +32,7 @@ async def login(user_in: UserLogin):
             return {"access_token": token, "token_type": "bearer"}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
-@app.get("/resources")
+@app.get("/protected_resources")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
 async def get_resource(request: Request, current_user: User = Depends(get_current_user)):
