@@ -32,6 +32,7 @@ async def login(user_in: UserLogin):
             return {"access_token": token, "token_type": "bearer"}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data request")
 
+
 @app.post("/protected_resources/{username}")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
@@ -64,6 +65,7 @@ async def delete_resource(request: Request, current_user: User = Depends(get_cur
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
     del RESOURCE[username]
     return {"message": "Resource deleted successfully"}
+
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
