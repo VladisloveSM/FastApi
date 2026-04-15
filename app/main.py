@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.rbac import PermissionChecker
+from app.rbac import PermissionChecker, OwnershipChecker, CreateOwnershipChecker
 
 app = FastAPI()
 # Set Config
@@ -35,6 +35,7 @@ async def login(user_in: UserLogin):
 
 @app.post("/protected_resources/{username}")
 @PermissionChecker(["admin", "user", "guest"])
+@CreateOwnershipChecker(allow_admin_override=True)
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
 async def create_resource(resource: Data, request: Request, current_user: User = Depends(get_current_user), username: str = None):
     RESOURCE[username] = resource
@@ -43,6 +44,7 @@ async def create_resource(resource: Data, request: Request, current_user: User =
 @app.get("/protected_resources/{username}")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
+@OwnershipChecker(allow_public=True, check_existence=True)
 async def get_resource(request: Request, current_user: User = Depends(get_current_user), username: str = None):
     if username not in RESOURCE:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
@@ -51,6 +53,7 @@ async def get_resource(request: Request, current_user: User = Depends(get_curren
 @app.put("/protected_resources/{username}")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
+@OwnershipChecker(allow_public=False, check_existence=True) 
 async def update_resource(resource: Data, request: Request, current_user: User = Depends(get_current_user), username: str = None):
     if username not in RESOURCE:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
@@ -60,6 +63,7 @@ async def update_resource(resource: Data, request: Request, current_user: User =
 @app.delete("/protected_resources/{username}")
 @PermissionChecker(["admin", "user", "guest"])
 @limiter.limit(get_rate_limit_by_role, key_func=username_from_request)
+@OwnershipChecker(allow_public=False, check_existence=True)
 async def delete_resource(request: Request, current_user: User = Depends(get_current_user), username: str = None):
     if username not in RESOURCE:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
