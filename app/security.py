@@ -35,17 +35,6 @@ def decode_token(token: str) -> str:
 def get_user_from_token(token: str = Depends(oauth2_scheme)) -> str:
     return decode_token(token)
 
-def username_from_request(request: Request) -> str:
-    auth = request.headers.get("authorization", "")
-    prefix = "bearer "
-    if not auth.lower().startswith(prefix):
-        return "anonymous"
-    token = auth[len(prefix):].strip()
-    try:
-        return decode_token(token)
-    except HTTPException:
-        return "anonymous"
-
 def get_current_user(current_username: str = Depends(get_user_from_token)) -> User:
     """Get the current user based on their username from the token"""
     user = get_user(current_username)
