@@ -15,8 +15,8 @@ app = FastAPI()
 config = load_config()
 
 # Set Limiter
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
+# limiter = Limiter(key_func=get_remote_address)
+# app.state.limiter = limiter
 
 #Set hash metod
 #pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
