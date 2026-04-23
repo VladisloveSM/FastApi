@@ -7,7 +7,8 @@ cursor = conn.cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
-    username TEXT PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
     password TEXT NOT NULL
 )
 """)
