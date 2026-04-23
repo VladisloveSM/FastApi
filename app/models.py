@@ -3,11 +3,6 @@ from typing import Optional
 import app.validators as validators
 
 
-class Item(BaseModel):
-    id: int
-    text: str
-
-
 class User(BaseModel):
     username: str
     full_name: str | None = None
