@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi_limiter.depends import RateLimiter
-from app.models import Feedback, User, UserLogin
+from app.models import Feedback, UserLogin
 from app.config import load_config
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
