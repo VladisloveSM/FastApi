@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi_limiter.depends import RateLimiter
 from app.models import Feedback, UserLogin
 from app.config import load_config
@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from database import get_db_connection
+from app.database import get_db_connection
 
 app = FastAPI()
 # Set Config
@@ -20,6 +20,36 @@ config = load_config()
 #pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 feedbacks = []
+
+@app.post("/register")
+async def register(user: UserLogin):
+    """Регистрация нового пользователя"""
+    # Подключаемся к базе через get_db_connection()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        
+        # Вставляем новые данные в таблицу users
+        cursor.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (user.username, user.password)
+        )
+        
+        # Фиксируем изменения (commit())
+        conn.commit()
+        
+        return {"message": "User registered successfully!"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Registration failed: {str(e)}"
+        )
+    
+    finally:
+        # Закрываем соединение
+        conn.close()
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
