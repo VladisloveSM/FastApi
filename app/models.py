@@ -14,6 +14,11 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
+class Todo(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    completed: bool = False
 
 class Contact(BaseModel):
     email: EmailStr
