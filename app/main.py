@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi_limiter.depends import RateLimiter
-from app.models import Feedback, UserLogin
+from app.models import Feedback, User
 from app.config import load_config
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -22,21 +22,17 @@ config = load_config()
 feedbacks = []
 
 @app.post("/register")
-async def register(user: UserLogin):
-    """Регистрация нового пользователя"""
-    # Подключаемся к базе через get_db_connection()
+async def register(user: User):
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
         
-        # Вставляем новые данные в таблицу users
         cursor.execute(
             "INSERT INTO users (username, password) VALUES (?, ?)",
             (user.username, user.password)
         )
         
-        # Фиксируем изменения (commit())
         conn.commit()
         
         return {"message": "User registered successfully!"}
@@ -48,7 +44,6 @@ async def register(user: UserLogin):
         )
     
     finally:
-        # Закрываем соединение
         conn.close()
 
 @app.post("/feedback")

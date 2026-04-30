@@ -2,15 +2,7 @@ from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional
 import app.validators as validators
 
-
 class User(BaseModel):
-    username: str
-    full_name: str | None = None
-    email: EmailStr | None = None
-    disabled: bool = False
-    roles: list[str]  # List of user roles
-
-class UserLogin(BaseModel):
     username: str
     password: str
 
