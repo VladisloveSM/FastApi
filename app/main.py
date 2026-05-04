@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi_limiter.depends import RateLimiter
-from app.models import Feedback, User
+from app.models import Feedback, Todo
 from app.config import load_config
 from passlib.context import CryptContext
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -21,30 +21,31 @@ config = load_config()
 
 feedbacks = []
 
-@app.post("/register")
-async def register(user: User):
+@app.post("/create")
+async def register(todo: Todo):
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
         
         cursor.execute(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            (user.username, user.password)
+            "INSERT INTO todos (title, description) VALUES (?, ?)",
+            (todo.title, todo.description)
         )
         
         conn.commit()
         
-        return {"message": "User registered successfully!"}
+        return {"message": "Todo created successfully!"}
     
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Registration failed: {str(e)}"
+            detail=f"Failed to create todo: {str(e)}"
         )
     
     finally:
         conn.close()
+    
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
