@@ -16,8 +16,8 @@ config = load_config()
 # limiter = Limiter(key_func=get_remote_address)
 # app.state.limiter = limiter
 
-#Set hash metod
-#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Set hash metod
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 feedbacks = []
 
@@ -29,13 +29,20 @@ async def register(todo: Todo):
     try:
         
         cursor.execute(
-            "INSERT INTO todos (title, description) VALUES (?, ?)",
+            "INSERT INTO todo (title, description) VALUES (?, ?)",
             (todo.title, todo.description)
         )
         
         conn.commit()
+        todo_id = cursor.lastrowid
         
-        return {"message": "Todo created successfully!"}
+        return {
+            "id": todo_id,
+            "title": todo.title,
+            "description": todo.description,
+            "completed": False
+        }
+            
     
     except Exception as e:
         raise HTTPException(
