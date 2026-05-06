@@ -85,6 +85,43 @@ async def get_todo(todo_id: int):
     finally:
         conn.close()
 
+
+@app.put("/todo/{todo_id}")
+async def update_todo(todo_id: int, todo: Todo):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            "UPDATE todo SET title = ?, description = ?, completed = ? WHERE id = ?",
+            (todo.title, todo.description, todo.completed, todo_id)
+        )
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Todo not found"
+            )
+        
+        conn.commit()
+        
+        return {
+            "id": todo_id,
+            "title": todo.title,
+            "description": todo.description,
+            "completed": todo.completed
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update todo: {str(e)}"
+        )
+    
+    finally:
+        conn.close()
+
+
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
     feedbacks.append(feedback)
