@@ -54,6 +54,37 @@ async def register(todo: Todo):
         conn.close()
     
 
+@app.get("/todo/{todo_id}")
+async def get_todo(todo_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT * FROM todo WHERE id = ?", (todo_id,))
+        todo = cursor.fetchone()
+        
+        if todo is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Todo not found"
+            )
+        
+        return {
+            "id": todo[0],
+            "title": todo[1],
+            "description": todo[2],
+            "completed": todo[3]
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to create todo: {str(e)}"
+        )
+    
+    finally:
+        conn.close()
+
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
     feedbacks.append(feedback)
