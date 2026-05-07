@@ -121,6 +121,33 @@ async def update_todo(todo_id: int, todo: Todo):
     finally:
         conn.close()
 
+@app.delete("/todo/{todo_id}")
+async def delete_todo(todo_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM todo WHERE id = ?", (todo_id,))
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Todo not found"
+            )
+        
+        conn.commit()
+        
+        return {"message": "Todo deleted successfully"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to delete todo: {str(e)}"
+        )
+    
+    finally:
+        conn.close()
+
 
 @app.post("/feedback")
 async def create_feedback(feedback: Feedback, is_premium: bool = False):
